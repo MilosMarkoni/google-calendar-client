@@ -5,3 +5,16 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
 });
+
+export const getCalendarEvents = async (
+  providerToken: string | null = null,
+  params: URLSearchParams = new URLSearchParams(),
+) => {
+  const response = await apiClient.get(`/primary/events?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${providerToken}`,
+    },
+    params,
+  });
+  return response.data;
+};
