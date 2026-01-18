@@ -1,22 +1,22 @@
-import { Button, Card, Heading, Text } from '@radix-ui/themes';
+import { Box, Card, Flex } from '@radix-ui/themes';
 import { observer } from 'mobx-react-lite';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import Header from '../components/Header';
+import Calendar from '../components/Calendar';
 
 const Home = observer(() => {
-  const navigate = useNavigate();
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
-  };
   return (
-    <div>
-      <Card>
-        <Heading>Home</Heading>
-        <Text>Welcome to the home page</Text>
-        <Button onClick={handleLogout}>Logout</Button>
-      </Card>
-    </div>
+    <Box p="6" style={{ minHeight: '100vh' }}>
+      <Flex direction="column" gap="6" align="stretch">
+        <Header />
+        <Card>
+          <Box p="5">
+            <Flex direction="column" gap="4">
+              <Calendar />
+            </Flex>
+          </Box>
+        </Card>
+      </Flex>
+    </Box>
   );
 });
 

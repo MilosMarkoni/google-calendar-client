@@ -1,4 +1,5 @@
 import '@radix-ui/themes/styles.css';
+import './main.css';
 
 import { Theme } from '@radix-ui/themes';
 import { StrictMode } from 'react';

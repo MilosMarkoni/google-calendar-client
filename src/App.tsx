@@ -2,6 +2,7 @@ import { lazy, useEffect, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { useStore } from './store/StoreProvider';
+import { Loader } from './components/Loader';
 
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
@@ -20,11 +21,11 @@ function App() {
   }, [sessionStore.isAuthenticated, sessionStore.loading, navigate]);
 
   if (sessionStore.loading) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <Routes>
         <Route path="/" element={sessionStore.isAuthenticated ? <Home /> : <Navigate to="/login" replace />} />
         <Route path="/login" element={sessionStore.isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
