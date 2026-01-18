@@ -1,5 +1,11 @@
+import { SessionStore } from './SessionStore';
+
 export class RootStore {
-  constructor() {}
+  sessionStore: SessionStore;
+
+  constructor() {
+    this.sessionStore = new SessionStore();
+  }
 }
 
 export const rootStore = new RootStore();

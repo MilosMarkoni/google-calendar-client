@@ -3,11 +3,6 @@
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-body * {
   box-sizing: border-box;
+  margin: 0;
 }
