@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../../supabaseClient';
+import type { RootStore } from './rootStore';
 
 export class SessionStore {
   session: Session | null = null;
@@ -12,12 +13,20 @@ export class SessionStore {
   }
 
   async initialize() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    this.setSession(session);
-    this.setLoading(false);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        this.setSession(session);
+      }
+    } catch (error) {
+      console.error('Error initializing session:', error);
+    } finally {
+      this.setLoading(false);
+    }
 
+    // Listen for auth state changes
     supabase.auth.onAuthStateChange((_event, session) => {
       this.setSession(session);
     });

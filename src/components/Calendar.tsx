@@ -1,46 +1,28 @@
-import { useEffect, useState } from 'react';
-import { getCalendarEvents } from '../config/api';
+import { observer } from 'mobx-react-lite';
 import { useStore } from '../store/StoreProvider';
 import RangePicker from './RangePicker';
+import { Loader } from './Loader';
 
-export const Calendar = () => {
-  const { sessionStore } = useStore();
-  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
-  const providerToken = sessionStore.session?.provider_token;
-
-  useEffect(() => {
-    const fetchCalendarEvents = async () => {
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
-
-      const end = new Date(start);
-      end.setDate(end.getDate() + 1);
-
-      const params = new URLSearchParams({
-        timeMin: start.toISOString(),
-        timeMax: end.toISOString(),
-        singleEvents: 'true',
-        orderBy: 'startTime',
-      });
-
-      const response = await getCalendarEvents(providerToken, params);
-
-      setCalendarEvents(response.items);
-    };
-    fetchCalendarEvents();
-  }, []);
+export const Calendar = observer(() => {
+  const {
+    calendarStore: { calendarEvents, isLoading },
+  } = useStore();
 
   return (
     <div>
       <RangePicker />
-      {calendarEvents?.map((event) => (
-        <div key={event.id}>
-          <h3>{event.summary}</h3>
-          <p>{event.start.dateTime}</p>
-          <p>{event.end.dateTime}</p>
-        </div>
-      ))}
+      {isLoading ? (
+        <Loader />
+      ) : (
+        calendarEvents?.map((event) => (
+          <div key={event.id}>
+            <h3>{event.summary}</h3>
+            <p>{event.start.dateTime}</p>
+            <p>{event.end.dateTime}</p>
+          </div>
+        ))
+      )}
     </div>
   );
-};
+});
 export default Calendar;
