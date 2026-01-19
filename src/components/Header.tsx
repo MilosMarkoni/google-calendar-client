@@ -2,6 +2,7 @@ import { Box, Button, Flex, Heading } from '@radix-ui/themes';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useStore } from '../store/StoreProvider';
+import { AddNewEventDialog } from './AddNewEventDialog';
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -15,16 +16,9 @@ export const Header = () => {
       <Flex direction="row" justify="between" align="center" style={{ width: '100%' }}>
         <Heading>Welcome, {sessionStore.session?.user?.user_metadata.name}</Heading>
 
-        {/* TODO: Add a modal to add new event */}
         <Flex direction="row" align="center" gapX="6">
-          <Button
-            onClick={() => {
-              console.log('add new event');
-            }}
-            size="3"
-          >
-            Add new event
-          </Button>
+          <AddNewEventDialog />
+
           <Button onClick={handleLogout} variant="ghost" size="3">
             <svg
               width="16"

@@ -18,3 +18,20 @@ export const getCalendarEventsAPI = async (
   });
   return response.data;
 };
+
+export const createCalendarEventAPI = async (
+  providerToken: string | null = null,
+  eventData: {
+    summary: string;
+    start: { dateTime: string; timeZone: string };
+    end: { dateTime: string; timeZone: string };
+  },
+) => {
+  const response = await apiClient.post(`/primary/events`, eventData, {
+    headers: {
+      Authorization: `Bearer ${providerToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data;
+};

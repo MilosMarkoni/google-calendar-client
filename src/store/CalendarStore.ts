@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction, action, runInAction } from 'mobx';
-import { getCalendarEventsAPI } from '../config/api';
+import { getCalendarEventsAPI, createCalendarEventAPI } from '../config/api';
 import type { RootStore } from './rootStore';
 
 export class CalendarStore {
@@ -76,6 +76,11 @@ export class CalendarStore {
   };
 
   fetchCalendarEvents = action(async () => {
+    if (!this.rootStore.sessionStore.session?.provider_token && !this.rootStore.sessionStore.loading) {
+      this.setCalendarEvents([]);
+      return;
+    }
+
     try {
       this.isLoading = true;
       const params = new URLSearchParams({
@@ -113,9 +118,34 @@ export class CalendarStore {
     this.endDate.setDate(this.endDate.getDate() + this.range - 1);
     this.endDate.setHours(23, 59, 59, 999);
 
-    // Refetch events when range changes
-    if (this.rootStore.sessionStore.session?.provider_token && !this.rootStore.sessionStore.loading) {
-      this.fetchCalendarEvents();
-    }
+    this.fetchCalendarEvents();
   };
+
+  createEvent = action(async (summary: string, startDateTime: string, endDateTime: string) => {
+    try {
+      const providerToken = this.rootStore.sessionStore.session?.provider_token;
+      if (!providerToken) {
+        throw new Error('No provider token available');
+      }
+
+      const eventData = {
+        summary,
+        start: {
+          dateTime: startDateTime,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+        end: {
+          dateTime: endDateTime,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      };
+
+      await createCalendarEventAPI(providerToken, eventData);
+
+      await this.fetchCalendarEvents();
+    } catch (error) {
+      console.error('Error creating calendar event:', error);
+      throw error;
+    }
+  });
 }
