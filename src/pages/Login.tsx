@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { observer } from 'mobx-react-lite';
-import { supabase } from '../../supabaseClient';
 import { Button } from '@radix-ui/themes';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+import { supabase } from '../../supabaseClient';
 import { Loader } from '../components/Loader';
 
 const Login = observer(() => {
