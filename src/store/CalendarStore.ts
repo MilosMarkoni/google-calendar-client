@@ -1,5 +1,6 @@
 import { makeAutoObservable, reaction, action, runInAction } from 'mobx';
 import { getCalendarEventsAPI, createCalendarEventAPI } from '../config/api';
+import { formatDateStr, getMondayOfWeek } from '../utils';
 import type { RootStore } from './rootStore';
 
 export class CalendarStore {
@@ -42,7 +43,7 @@ export class CalendarStore {
   private setCalendarEvents = (events: any[]) => {
     const groupedEventsByDay = events.reduce((acc, event) => {
       const date = new Date(event.start?.dateTime || event.start?.date);
-      const day = date.toISOString().split('T')[0];
+      const day = formatDateStr(date);
       acc[day] = acc[day] || [];
       acc[day].push(event);
       return acc;
@@ -50,26 +51,34 @@ export class CalendarStore {
 
     let noEventsDays: { [key: string]: any[] } = {};
 
-    // // if the start date is not Monday, add ghost days for the previous days
-    for (let i = 1; i < this.startDate.getDay(); i++) {
-      const previousDay = new Date(this.startDate);
-      previousDay.setDate(previousDay.getDate() - i);
-      noEventsDays[previousDay.toISOString().split('T')[0]] = [] as any[];
-    }
-
-    // add ghost days for the in between days if there are no events
-    for (let i = 1; i <= this.range; i++) {
+    // add ghost days for days in the range if there are no events
+    // i=0 covers startDate, i=1 to i<range covers the remaining days
+    for (let i = 0; i < this.range; i++) {
       const possibleGhostDay = new Date(this.startDate);
       possibleGhostDay.setDate(possibleGhostDay.getDate() + i);
-      if (!groupedEventsByDay[possibleGhostDay.toISOString().split('T')[0]]) {
-        noEventsDays[possibleGhostDay.toISOString().split('T')[0]] = [] as any[];
+      const dayKey = formatDateStr(possibleGhostDay);
+      if (!groupedEventsByDay[dayKey]) {
+        noEventsDays[dayKey] = [] as any[];
       }
     }
 
     const calendarEvents: { [key: string]: any[] } = { ...groupedEventsByDay, ...noEventsDays };
+
+    // Filter to only include days within the range (startDate to endDate)
+    const startDateStr = formatDateStr(this.startDate);
+    const endDateStr = formatDateStr(this.endDate);
+
+    const filteredCalendarEvents = Object.fromEntries(
+      Object.entries(calendarEvents).filter(([day]) => {
+        return day >= startDateStr && day <= endDateStr;
+      }),
+    );
+
     // sort calendar events by date
     const sortedCalendarEvents = Object.fromEntries(
-      Object.entries(calendarEvents).sort((a: any, b: any) => new Date(a[0]).getTime() - new Date(b[0]).getTime()),
+      Object.entries(filteredCalendarEvents).sort(
+        (a: any, b: any) => new Date(a[0]).getTime() - new Date(b[0]).getTime(),
+      ),
     );
 
     this.calendarEvents = sortedCalendarEvents as unknown as any[];
@@ -113,6 +122,18 @@ export class CalendarStore {
 
   setRange = (range: number) => {
     this.range = range;
+
+    // For 7 and 30 day ranges, start on Monday of the current week
+    if (range === 7 || range === 30) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      this.startDate = getMondayOfWeek(today);
+    } else {
+      // For 1 day range, keep startDate as today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      this.startDate = today;
+    }
 
     this.endDate = new Date(this.startDate);
     this.endDate.setDate(this.endDate.getDate() + this.range - 1);
